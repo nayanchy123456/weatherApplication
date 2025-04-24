@@ -1,42 +1,62 @@
-import React from 'react'
-import './App.css'
+import React, { useState } from "react";
+import "./App.css";
 
 function App() {
-  return (
-    <div className='wrapper'>
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState(null);
+  const [error, setError] = useState("");
 
-      <div className='header'>
-        <h1 className='city'>London</h1>
-        <p className='temperature'>60°F</p>
-        <p className='condition'>Cloudy</p>
+  const API_KEY = "f9d2aaa2ba94d7f625369864581a7430"; 
+  const handleSearch = async () => {
+    if (!city) 
+    {
+      alert("Enter the city name");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+      );
+
+      if (!res.ok) throw new Error("City not found");
+
+      const data = await res.json();
+      setWeather(data);
+      setError("");
+    } catch (err) {
+      setWeather(null);
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="app">
+      <h1>Weather App</h1>
+
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Enter city name"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <button onClick={handleSearch}>🔍</button>
       </div>
-      <div className='weather-details'>
-        <div>
-          <p>Humidity</p>
-          <p>60%</p>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {weather && (
+        <div className="weather-box">
+          <h2>📍 {weather.name}</h2>
+          <p>🌤 {weather.weather[0].description}</p>
+          <p>🌡️ {Math.round(weather.main.temp)}°C</p>
+          <p>💧 Humidity: {weather.main.humidity}%</p>
+          <p>💨 Wind: {weather.wind.speed} km/h</p>
         </div>
-        <div>
-          <p>Wind Speed</p>
-          <p>7 mph</p>
-        </div>
-      </div>
-      <div className='forecast'>
-        <h2 className='forecaset-header'>5-Day Forecast</h2>
-        <div className='forecast-days'>
-          <div className='forecast-day'>
-            <p>Monday</p>
-            <p>Cloudy</p>
-            <p>12°F</p>
-          </div>
-          <div className="forecast-day">
-            <p>Monday</p>
-            <p>Cloudy</p>
-            <p>12°F</p>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
